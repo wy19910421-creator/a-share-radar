@@ -1,0 +1,12 @@
+# 本地凭证（绝不上传）
+.env
+
+# 运行时产物
+output/
+*.pyc
+__pycache__/
+*.log
+
+# 本地临时/备份
+*.bak
+.DS_Store

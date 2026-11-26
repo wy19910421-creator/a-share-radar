@@ -1,0 +1,45 @@
+name: A股投研简报
+
+on:
+  schedule:
+    # GitHub Actions 使用 UTC。北京时间 09:00 = UTC 01:00；15:30 = UTC 07:30
+    - cron: '0 1 * * 1-5'    # 盘前 09:00（周一至周五）
+    - cron: '30 7 * * 1-5'   # 盘后 15:30（周一至周五）
+  workflow_dispatch:          # 手动触发，便于验证
+
+permissions:
+  contents: read
+
+jobs:
+  brief:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 判断盘前/盘后
+        id: mode
+        run: |
+          # 用 UTC 时间判断：01:xx 为盘前，07:xx 为盘后；手动触发默认盘后
+          H=$(date -u +%H)
+          if [ "$H" = "01" ]; then
+            M=pre
+          else
+            M=post
+          fi
+          echo "mode=$M" >> $GITHUB_OUTPUT
+          echo "当前 UTC 小时=$H，模式=$M"
+
+      - name: 生成并推送简报
+        env:
+          TZ: Asia/Shanghai
+          PUSH_ENABLED: 'true'
+          PUSH_CHANNEL: pushplus
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+        run: python main.py --mode ${{ steps.mode.outputs.mode }}

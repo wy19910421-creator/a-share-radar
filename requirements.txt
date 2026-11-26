@@ -1,0 +1,2 @@
+# 本项目零第三方依赖：仅使用 Python 标准库 + 系统自带 curl
+# 无需 pip install；GitHub Actions 的 ubuntu-latest 已自带 curl 与 Python 3
