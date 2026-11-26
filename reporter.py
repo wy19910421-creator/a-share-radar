@@ -246,7 +246,9 @@ def temperature_block(data):
     # 昨日列：多数接口无历史，按模板标注 T-1 或待补
     def row(name, today, yesterday, note=""):
         nt = h(note)
-        return f'<tr><td class="metric">{h(name)}{f"<div class=\"sub\">{nt}</div>" if nt else ""}</td>' \
+        note_html = f'<div class="sub">{nt}</div>' if nt else ""
+        name_html = h(name)
+        return f'<tr><td class="metric">{name_html}{note_html}</td>' \
                f'<td>{today}</td><td>{yesterday}</td><td>{h("—")}</td></tr>'
 
     rows = []
@@ -414,7 +416,8 @@ def limit_blocks(data):
             ld_html.append('<h3 style="margin-top:12px">跌停个股（成交额前5）</h3>'
                            '<table class="compact"><thead><tr><th>名称</th><th>价格</th><th>成交额</th><th>行业</th></tr></thead><tbody>')
             for r in rows[:5]:
-                ld_html.append(f'<tr><td class="nm">{h(r.get("name"))}{" <span class=\"code\">ST</span>" if r.get("is_st") else ""}</td>'
+                st_html = ' <span class="code">ST</span>' if r.get("is_st") else ""
+                ld_html.append(f'<tr><td class="nm">{h(r.get("name"))}{st_html}</td>'
                                f'<td>{r.get("price")}</td><td>{fmt_num(r.get("amount"),"元")}</td>'
                                f'<td>{h(r.get("industry") or "—")}</td></tr>')
             ld_html.append("</tbody></table>")
@@ -633,9 +636,10 @@ def tomorrow_block(data):
             ratio = r.get("ratio")
             cap = r.get("cap")
             cap_yuan = cap * 1e4 if isinstance(cap, (int, float)) else None  # 接口单位为万元
+            ratio_txt = f"{float(ratio) * 100:.2f}%" if isinstance(ratio, (int, float)) else "—"
             out.append(f'<tr><td>{h(r.get("date"))}</td><td class="nm">{h(r.get("name"))} <span class="code">{h(r.get("code"))}</span></td>'
                        f'<td>{fmt_num(cap_yuan,"元")}</td>'
-                       f'<td>{f"{float(ratio)*100:.2f}%" if isinstance(ratio,(int,float)) else "—"}</td></tr>')
+                       f'<td>{ratio_txt}</td></tr>')
         out.append("</tbody></table>")
     else:
         out.append(empty("未检索到未来3天解禁数据"))
